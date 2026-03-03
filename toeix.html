@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOEIC学習ツール</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            font-size: 12px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 18px;
+            font-weight: bold;
+            display: block;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            display: none;
+        }
+
+        .content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            text-align: center;
+        }
+
+        .vocab-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .grammar-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .review-btn {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            grid-column: 1 / -1;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+        }
+
+        .word {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .meaning {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .example {
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+
+        .question-text {
+            font-size: 18px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            text-align: left;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .option.correct {
+            border-color: #43e97b;
+            background: #43e97b;
+            color: white;
+        }
+
+        .option.incorrect {
+            border-color: #f5576c;
+            background: #f5576c;
+            color: white;
+        }
+
+        .explanation {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+            display: none;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .explanation.show {
+            display: block;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: #43e97b;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #f5576c;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+
+        .flip-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        .review-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .review-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #f5576c;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 { font-size: 20px; }
+            .word { font-size: 28px; }
+            .meaning { font-size: 18px; }
+            .card { padding: 20px; min-height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 TOEIC学習ツール</h1>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalStudied">0</span>
+                    <span>学習済み</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="correctRate">0%</span>
+                    <span>正答率</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="reviewCount">0</span>
+                    <span>復習待ち</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ホーム画面 -->
+        <div id="home" class="content active">
+            <div class="nav-buttons">
+                <button class="nav-btn vocab-btn" onclick="startVocab()">
+                    📖 単語帳
+                </button>
+                <button class="nav-btn grammar-btn" onclick="startGrammar()">
+                    ✍️ 文法問題
+                </button>
+                <button class="nav-btn review-btn" onclick="startReview()">
+                    🔄 復習モード
+                </button>
+            </div>
+        </div>
+
+        <!-- 単語帳画面 -->
+        <div id="vocab" class="content">
+            <div class="progress-bar">
+                <div class="progress-fill" id="vocabProgress"></div>
+            </div>
+            <div class="card" id="vocabCard" onclick="flipCard()">
+                <div class="word" id="vocabWord">Loading...</div>
+                <div class="flip-hint">タップして意味を表示</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-danger" onclick="markForReview()">復習リストへ</button>
+                <button class="btn btn-success" onclick="nextVocab()">次へ</button>
+                <button class="btn btn-secondary" onclick="goHome()">ホーム</button>
+            </div>
+        </div>
+
+        <!-- 文法問題画面 -->
+        <div id="grammar" class="content">
+            <div class="progress-bar">
+                <div class="progress-fill" id="grammarProgress"></div>
+            </div>
+            <div class="card">
+                <div class="question-text" id="questionText">Loading...</div>
+                <div class="options" id="options"></div>
+                <div class="explanation" id="explanation">
+                    <strong>解説：</strong><span id="explanationText"></span>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="nextBtn" onclick="nextGrammar()" style="display:none;">次の問題</button>
+                <button class="btn btn-secondary" onclick="goHome()">ホーム</button>
+            </div>
+        </div>
+
+        <!-- 復習画面 -->
+        <div id="review" class="content">
+            <h3 style="margin-bottom: 15px;">🔄 復習リスト</h3>
+            <div class="review-list" id="reviewList"></div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="startReviewSession()">復習開始</button>
+                <button class="btn btn-danger" onclick="clearReview()">リストクリア</button>
+                <button class="btn btn-secondary" onclick="goHome()">ホーム</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // データベース
+        const vocabData = [
+            { word: "implement", meaning: "実施する、導入する", example: "The company will implement the new policy next month.", pos: "verb" },
+            { word: "revenue", meaning: "収益、歳入", example: "Our revenue increased by 15% last year.", pos: "noun" },
+            { word: "dedicated", meaning: "献身的な、専用の", example: "She is a dedicated employee.", pos: "adjective" },
+            { word: "significant", meaning: "重要な、かなりの", example: "There was a significant improvement in sales.", pos: "adjective" },
+            { word: "negotiate", meaning: "交渉する", example: "We need to negotiate the contract terms.", pos: "verb" },
+            { word: "efficient", meaning: "効率的な", example: "This new system is more efficient.", pos: "adjective" },
+            { word: "colleague", meaning: "同僚", example: "I discussed it with my colleagues.", pos: "noun" },
+            { word: "deadline", meaning: "締切", example: "The deadline is next Friday.", pos: "noun" },
+            { word: "budget", meaning: "予算", example: "We need to stay within budget.", pos: "noun" },
+            { word: "analyze", meaning: "分析する", example: "Let's analyze the data carefully.", pos: "verb" }
+        ];
+
+        const grammarData = [
+            {
+                question: "The manager _____ the proposal before the meeting.",
+                options: ["reviews", "reviewed", "will review", "has reviewing"],
+                correct: 1,
+                explanation: "「before the meeting」は過去の一点を表すため、過去形「reviewed」が適切です。"
+            },
+            {
+                question: "All employees are required _____ safety training.",
+                options: ["complete", "to complete", "completing", "completed"],
+                correct: 1,
+                explanation: "「be required to V」で「〜することを求められる」という定型表現です。"
+            },
+            {
+                question: "The report is due _____ Friday.",
+                options: ["on", "in", "at", "by"],
+                correct: 3,
+                explanation: "「be due by 日付」で「〜までが期限」という意味になります。"
+            },
+            {
+                question: "Despite _____ hard, he couldn't finish the project.",
+                options: ["work", "working", "worked", "to work"],
+                correct: 1,
+                explanation: "前置詞「Despite」の後には動名詞「working」が必要です。"
+            },
+            {
+                question: "If I _____ more time, I would complete the task.",
+                options: ["have", "had", "will have", "would have"],
+                correct: 1,
+                explanation: "仮定法過去では、if節で過去形「had」を使います。"
+            }
+        ];
+
+        // 状態管理
+        let currentMode = '';
+        let currentIndex = 0;
+        let currentItems = [];
+        let isFlipped = false;
+        let stats = loadStats();
+        let reviewItems = loadReviewItems();
+
+        // データの保存・読み込み
+        function saveStats() {
+            localStorage.setItem('toeicStats', JSON.stringify(stats));
+        }
+
+        function loadStats() {
+            const saved = localStorage.getItem('toeicStats');
+            return saved ? JSON.parse(saved) : {
+                totalStudied: 0,
+                correctAnswers: 0,
+                totalAnswers: 0,
+                vocabStudied: 0,
+                grammarStudied: 0
+            };
+        }
+
+        function saveReviewItems() {
+            localStorage.setItem('toeicReview', JSON.stringify(reviewItems));
+        }
+
+        function loadReviewItems() {
+            const saved = localStorage.getItem('toeicReview');
+            return saved ? JSON.parse(saved) : { vocab: [], grammar: [] };
+        }
+
+        // 重み付きランダム選択（間違えた回数が多いほど出やすい）
+        function getWeightedRandom(items, type) {
+            const weights = items.map(item => {
+                const id = type === 'vocab' ? item.word : item.question;
+                const record = stats[id] || { wrong: 0 };
+                return record.wrong + 1; // 最低重み1
+            });
+            
+            const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+            let random = Math.random() * totalWeight;
+            
+            for (let i = 0; i < items.length; i++) {
+                if (random < weights[i]) return i;
+                random -= weights[i];
+            }
+            return items.length - 1;
+        }
+
+        // 統計更新
+        function updateStats() {
+            document.getElementById('totalStudied').textContent = stats.totalStudied;
+            const rate = stats.totalAnswers > 0 ? Math.round((stats.correctAnswers / stats.totalAnswers) * 100) : 0;
+            document.getElementById('correctRate').textContent = rate + '%';
+            document.getElementById('reviewCount').textContent = reviewItems.vocab.length + reviewItems.grammar.length;
+        }
+
+        // 画面切り替え
+        function showScreen(screenId) {
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function goHome() {
+            showScreen('home');
+            updateStats();
+        }
+
+        // 単語帳機能
+        function startVocab() {
+            currentMode = 'vocab';
+            currentItems = [...vocabData];
+            currentIndex = 0;
+            isFlipped = false;
+            showScreen('vocab');
+            displayVocab();
+        }
+
+        function displayVocab() {
+            if (currentIndex >= currentItems.length) {
+                alert('単語学習完了！');
+                goHome();
+                return;
+            }
+
+            const item = currentItems[currentIndex];
+            const card = document.getElementById('vocabCard');
+            isFlipped = false;
+            
+            card.innerHTML = `
+                <div class="word">${item.word}</div>
+                <div class="flip-hint">タップして意味を表示</div>
+            `;
+            
+            updateProgress('vocabProgress', currentIndex, currentItems.length);
+        }
+
+        function flipCard() {
+            if (isFlipped) return;
+            
+            const item = currentItems[currentIndex];
+            const card = document.getElementById('vocabCard');
+            isFlipped = true;
+            
+            card.innerHTML = `
+                <div class="word">${item.word}</div>
+                <div class="meaning">${item.meaning}</div>
+                <div class="example">${item.example}</div>
+            `;
+        }
+
+        function nextVocab() {
+            stats.totalStudied++;
+            stats.vocabStudied++;
+            currentIndex++;
+            displayVocab();
+            saveStats();
+        }
+
+        function markForReview() {
+            const item = currentItems[currentIndex];
+            const exists = reviewItems.vocab.some(v => v.word === item.word);
+            if (!exists) {
+                reviewItems.vocab.push(item);
+                saveReviewItems();
+            }
+            nextVocab();
+        }
+
+        // 文法問題機能
+        function startGrammar() {
+            currentMode = 'grammar';
+            currentItems = [...grammarData];
+            currentIndex = 0;
+            showScreen('grammar');
+            displayGrammar();
+        }
+
+        function displayGrammar() {
+            if (currentIndex >= currentItems.length) {
+                alert('文法問題完了！');
+                goHome();
+                return;
+            }
+
+            const item = currentItems[currentIndex];
+            document.getElementById('questionText').textContent = item.question;
+            
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            
+            item.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.textContent = `${String.fromCharCode(65 + index)}. ${option}`;
+                optionDiv.onclick = () => selectAnswer(index);
+                optionsDiv.appendChild(optionDiv);
+            });
+            
+            document.getElementById('explanation').classList.remove('show');
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            updateProgress('grammarProgress', currentIndex, currentItems.length);
+        }
+
+        function selectAnswer(selectedIndex) {
+            const item = currentItems[currentIndex];
+            const options = document.querySelectorAll('#options .option');
+            
+            // 重複選択防止
+            if (options[0].classList.contains('correct') || options[0].classList.contains('incorrect')) {
+                return;
+            }
+            
+            stats.totalAnswers++;
+            const isCorrect = selectedIndex === item.correct;
+            
+            options.forEach((option, index) => {
+                option.style.pointerEvents = 'none';
+                if (index === item.correct) {
+                    option.classList.add('correct');
+                } else if (index === selectedIndex && !isCorrect) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (isCorrect) {
+                stats.correctAnswers++;
+            } else {
+                // 復習リストに追加
+                const exists = reviewItems.grammar.some(g => g.question === item.question);
+                if (!exists) {
+                    reviewItems.grammar.push(item);
+                    saveReviewItems();
+                }
+                
+                // 統計記録
+                if (!stats[item.question]) stats[item.question] = { wrong: 0 };
+                stats[item.question].wrong++;
+            }
+            
+            document.getElementById('explanationText').textContent = item.explanation;
+            document.getElementById('explanation').classList.add('show');
+            document.getElementById('nextBtn').style.display = 'inline-block';
+            
+            stats.totalStudied++;
+            stats.grammarStudied++;
+            saveStats();
+        }
+
+        function nextGrammar() {
+            currentIndex++;
+            displayGrammar();
+        }
+
+        // 復習機能
+        function startReview() {
+            showScreen('review');
+            displayReviewList();
+        }
+
+        function displayReviewList() {
+            const listDiv = document.getElementById('reviewList');
+            const totalItems = reviewItems.vocab.length + reviewItems.grammar.length;
+            
+            if (totalItems === 0) {
+                listDiv.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 15px;">🎉</div>
+                        <div>復習する項目はありません！</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            listDiv.innerHTML = '';
+            
+            reviewItems.vocab.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'review-item';
+                itemDiv.innerHTML = `
+                    <strong>📖 ${item.word}</strong><br>
+                    <small>${item.meaning}</small>
+                `;
+                listDiv.appendChild(itemDiv);
+            });
+            
+            reviewItems.grammar.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'review-item';
+                itemDiv.innerHTML = `
+                    <strong>✍️ 文法問題</strong><br>
+                    <small>${item.question.substring(0, 50)}...</small>
+                `;
+                listDiv.appendChild(itemDiv);
+            });
+        }
+
+        function startReviewSession() {
+            if (reviewItems.vocab.length === 0 && reviewItems.grammar.length === 0) {
+                alert('復習する項目がありません！');
+                return;
+            }
+            
+            // 復習セッション用のアイテムを準備
+            const allReviewItems = [...reviewItems.vocab, ...reviewItems.grammar];
+            if (allReviewItems.length > 0) {
+                // 単語から始める（簡略化）
+                if (reviewItems.vocab.length > 0) {
+                    currentMode = 'vocab-review';
+                    currentItems = [...reviewItems.vocab];
+                    currentIndex = 0;
+                    showScreen('vocab');
+                    displayVocab();
+                } else {
+                    currentMode = 'grammar-review';
+                    currentItems = [...reviewItems.grammar];
+                    currentIndex = 0;
+                    showScreen('grammar');
+                    displayGrammar();
+                }
+            }
+        }
+
+        function clearReview() {
+            if (confirm('復習リストをクリアしますか？')) {
+                reviewItems = { vocab: [], grammar: [] };
+                saveReviewItems();
+                displayReviewList();
+                updateStats();
+            }
+        }
+
+        // プログレスバー更新
+        function updateProgress(elementId, current, total) {
+            const percent = ((current + 1) / total) * 100;
+            document.getElementById(elementId).style.width = percent + '%';
+        }
+
+        // 初期化
+        updateStats();
+    </script>
+</body>
+</html>
